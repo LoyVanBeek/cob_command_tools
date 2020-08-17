@@ -519,7 +519,7 @@ class simple_script_server:
 			rospy.logdebug("using default_vel parameter server")
 			param_string = self.ns_global_prefix + "/" + component_name + "/default_vel"
 			if not rospy.has_param(param_string):
-				default_vel = numpy.array([0.1 for _ in start_pos])  # rad/s
+				default_vel = numpy.array([0.1 for _ in joint_names])  # rad/s
 				rospy.logwarn(
 					"parameter '{}' does not exist on ROS Parameter Server, using default_vel {} [rad/sec].".format(
 						param_string, default_vel))
@@ -531,7 +531,7 @@ class simple_script_server:
 						((type(item) is float) or (type(item) is int)) for item in param_vel):
 					default_vel = numpy.array(param_vel)
 				else:
-					default_vel = numpy.array([0.1 for _ in start_pos])  # rad/s
+					default_vel = numpy.array([0.1 for _ in joint_names])  # rad/s
 					rospy.logwarn(
 						"parameter '{}' {} has wrong format (must be float/int or list of float/int), using default_vel {} [rad/sec].".format(
 							param_string, param_vel, default_vel))
