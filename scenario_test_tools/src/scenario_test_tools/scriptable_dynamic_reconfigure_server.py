@@ -20,6 +20,9 @@
 # - Verify a particular key was set to a particular value
 # - The above for a collection of keys, maybe in 1 call
 # - Just accept all changes but verify the current setting is #
+import pprint
+from collections import OrderedDict
+
 import rospy
 from dynamic_reconfigure.server import Server
 
@@ -30,7 +33,10 @@ from scenario_test_tools.util import countdown_sleep
 class ScriptableDynamicReconfigureServer(ScriptableBase):
     ACCEPT = 'ACCEPT'
 
-    def __init__(self, namespace, cfg_type, cfg_formatter=format, default_response=ACCEPT, default_response_delay=0):
+    def __init__(self, namespace, cfg_type,
+                 cfg_formatter=lambda cfg: pprint.pformat(dict(cfg)),
+                 default_response=ACCEPT,
+                 default_response_delay=0):
         super(ScriptableDynamicReconfigureServer, self).__init__(
             namespace,
             goal_formatter=cfg_formatter,
