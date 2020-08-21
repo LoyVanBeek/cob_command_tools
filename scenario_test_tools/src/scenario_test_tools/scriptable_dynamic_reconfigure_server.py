@@ -77,7 +77,13 @@ class ScriptableDynamicReconfigureServer(ScriptableBase):
             self._reply.wait()
             self._reply.clear()
 
-            new_cfg = self._next_reply
+            if type(self._next_reply) == type(cfg):
+                new_cfg = self._next_reply
+            elif self._next_reply == self.ACCEPT:
+                new_cfg = cfg
+            elif isinstance(self._next_reply, dict):
+                new_cfg = cfg
+                new_cfg.update(self._next_reply)
 
             self._next_reply = None
             self._current_goal = None

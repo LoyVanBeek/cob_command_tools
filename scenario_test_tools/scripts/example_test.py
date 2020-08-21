@@ -238,9 +238,16 @@ class TestScenario(object):
         rospy.loginfo("test_unhappy_flow succeeded")
 
     def test_dynamic_reconfigure(self):
-        new_cfg = self.cfg.await_goal()  # type: MoveBaseConfig
-        assert new_cfg['recovery_behavior_enabled'], "Expected recovery_behavior_enabled to be set to True"
+        new_cfg = self.cfg.await_goal(marker='Just change any setting so server can inspect the change')  # type: dict
+        # assert new_cfg['recovery_behavior_enabled'], "Expected recovery_behavior_enabled to be set to True"
+        assert new_cfg.has_key('recovery_behavior_enabled'), "No key 'recovery_behavior_enabled' which we should have!"
         self.cfg.direct_reply(new_cfg)
+
+        self.cfg.reply(self.cfg.ACCEPT, marker='Server will accept the change')
+        rospy.loginfo("Accepted config")
+
+        self.cfg.reply({'recovery_behavior_enabled': False}, marker='Server will set `recovery_behavior_enabled` to False')
+        rospy.loginfo("Altered config")
 
     def test_all(self):
         if not rospy.is_shutdown():
