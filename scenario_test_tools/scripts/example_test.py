@@ -19,12 +19,14 @@ import traceback
 import pdb
 
 import tf
+from move_base.cfg import MoveBaseConfig
 from std_msgs.msg import String
 from cob_sound.msg import SayAction, SayResult
 from move_base_msgs.msg import MoveBaseAction, MoveBaseResult, MoveBaseGoal
 from control_msgs.msg import FollowJointTrajectoryAction, FollowJointTrajectoryResult, FollowJointTrajectoryGoal
 from cob_srvs.srv import SetString, SetStringRequest, SetStringResponse
 
+from scenario_test_tools.scriptable_dynamic_reconfigure_server import ScriptableDynamicReconfigureServer
 from scenario_test_tools.scriptable_move_base import ScriptableMoveBase
 from scenario_test_tools.scriptable_action_server import ScriptableActionServer
 from scenario_test_tools.scriptable_service_server import ScriptableServiceServer
@@ -112,6 +114,8 @@ class TestScenario(object):
                                                                      "Dock: {}".format(
                                                                          "Succeeded " if res.success else "Failed") +
                                                                      bcolors.ENDC)
+
+        self.cfg = ScriptableDynamicReconfigureServer('/dummy_cfg', MoveBaseConfig)
 
         self.say.start()
         self.move_base.start()
@@ -232,6 +236,11 @@ class TestScenario(object):
             rospy.sleep(0.5)
 
         rospy.loginfo("test_unhappy_flow succeeded")
+
+    def test_dynamic_reconfigure(self):
+        new_cfg = self.cfg.await_goal()  # type: MoveBaseConfig
+        assert new_cfg['recovery_behavior_enabled'], "Expected recovery_behavior_enabled to be set to True"
+        self.cfg.direct_reply(new_cfg)
 
     def test_all(self):
         if not rospy.is_shutdown():
