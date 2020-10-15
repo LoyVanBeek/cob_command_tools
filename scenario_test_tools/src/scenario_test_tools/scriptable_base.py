@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import inspect
 from threading import Event
 import contextlib
 
@@ -226,6 +226,38 @@ class ScriptableBase(object):
         self._waiting_for = None
 
         print("{}.direct_reply{}: Finished replying".format(self._name, '({})'.format(marker) if marker else ''))
+
+    def assert_called_with(self, expected, condition=lambda actual, expected: actual == expected, timeout=None, marker=None):
+        """
+        Await a goal to be sent to this Scriptable... and assert the goal matches the expected goal.
+        An AssertionError is raised when a goal is not received within the given timeout.
+        Also raises and AssertionError when the received goal does not match what is expected, but continues if it does.
+        How well the received goal needs to match the expected goal can be overridden by the `condition` parameter.
+        This takes a Callable that takes (actual, expected) and returns a bool.
+
+        :param expected: The expected goal. This not not need to 100% match when a proper condition-parameter is defined
+        :param condition: Callable returning a bool to compare expected and received goal. Should return True in case of a match.
+        :param timeout: how long to wait for the goal? Defaults to None to wait indefinitely
+        :param marker: A str that is printed in the output for easy reference between different replies
+        """
+        print('\n########  {}.assert_called_with{}  ###########'
+            .format(self._name, '({})'.format(marker) if marker else ''))
+        self.default_reply = None
+
+        print("{}.assert_called_with{}: Waiting {}for goal..."
+            .format(self._name, '({})'.format(marker) if marker else '',
+                    str(timeout)+'s ' if timeout is not None else ''))
+        assert self._request.wait(timeout), "{}.assert_called_with{} did not get a goal in time".format(self._name, '({})'.format(marker) if marker else '')
+        self._request.clear()
+        print("{}.assert_called_with{}: Got goal: {}"
+            .format(self._name, '({})'.format(marker) if marker else '', self.goal_formatter(self._current_goal)))
+
+        assert condition(self._current_goal, expected), "Expected goal {e} does not match actual goal {a} according to {c}"\
+            .format(e=self.goal_formatter(expected),
+                    a=self.goal_formatter(self._current_goal),
+                    c=inspect.getsource(condition))
+
+        self._waiting_for = 'direct_reply'
 
     @property
     def default_reply(self):
