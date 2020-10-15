@@ -77,3 +77,16 @@ class ManualBase(ScriptableBase):
         input("Press [Enter] when {} has finished: ".format(self.name))
 
         self._waiting_for = None
+
+    def match_in_received_goals(self, match_against, key=lambda x: x):
+        """
+        Find out if this server has any goal in it's history that is also in `match_against`
+
+        :param match_against: We're looking for any of the items in `match_against`
+        :param key: optionally transform the received goals with this callable into the same type as `match_against`'s elements
+        :return: The matching elements
+        """
+        assert input("Press [y] or [n] when {} was called with a goal matching condition `{}`: "
+                     .format(self, inspect.getsource(match_against).strip())) \
+               in ['y', '']
+        return {True}
