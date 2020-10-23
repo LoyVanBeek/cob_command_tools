@@ -53,7 +53,9 @@ class ManualBase(ScriptableBase):
 
         return self._current_goal
 
-    def assert_called_with(self, expected, condition=lambda actual, expected: actual == expected, timeout=None, marker=None):
+    def assert_called_with(self, expected, condition=None, timeout=None, marker=None):
+        if not condition:
+            condition = lambda actual, expected: actual == expected  # Simple equality
         print('\n########  {}.assert_called_with{}  ###########'
             .format(self._name, '({})'.format(marker) if marker else ''))
         self.default_reply = None
